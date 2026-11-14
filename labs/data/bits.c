@@ -143,7 +143,12 @@ NOTES:
  *   Rating: 1
  */
 int bitXor(int x, int y) {
-  return 2;
+  // 对应位全为 1
+  int two_one_bit = x & y;
+  // 对应位全为 0
+  int two_zero_bit = ~x & ~y;
+  // 全为 0 或全为 1 的位变为 0
+  return ~two_one_bit & ~two_zero_bit;
 }
 /* 
  * tmin - return minimum two's complement integer 
@@ -152,9 +157,8 @@ int bitXor(int x, int y) {
  *   Rating: 1
  */
 int tmin(void) {
-
-  return 2;
-
+  // 32 位有符号整数最小值：0x80000000
+  return 1 << 31;
 }
 //2
 /*
@@ -165,7 +169,9 @@ int tmin(void) {
  *   Rating: 1
  */
 int isTmax(int x) {
-  return 2;
+  // 32 位有符号整数最大值：0x7FFFFFFF（注意和 -1 区分）
+  // x 为有符号整数最大值：!(x+1) == 0 && x+1 == ~x
+  return !(!(x+1) | ((x+1)^(~x)));
 }
 /* 
  * allOddBits - return 1 if all odd-numbered bits in word set to 1
@@ -176,7 +182,13 @@ int isTmax(int x) {
  *   Rating: 2
  */
 int allOddBits(int x) {
-  return 2;
+  // 构造掩码 0xAAAAAAAA
+  int mask = 0xAA;
+  mask |= mask << 8;
+  mask |= mask << 16;
+  // (x & mask) == mask 
+  // 'x == y' 可以等价于 '!(x ^ y)'
+  return !((x & mask) ^ mask);
 }
 /* 
  * negate - return -x 
@@ -186,7 +198,8 @@ int allOddBits(int x) {
  *   Rating: 2
  */
 int negate(int x) {
-  return 2;
+  // 按位取反再加一
+  return ~x + 1;
 }
 //3
 /* 
@@ -199,7 +212,11 @@ int negate(int x) {
  *   Rating: 3
  */
 int isAsciiDigit(int x) {
-  return 2;
+  // 有符号负数的标记位
+  int neg_sig = 1 << 31;
+  // (x - 0x30 >= 0) and (0x39 - x >= 0)
+  return !((x + (~0x30+1)) & neg_sig) & 
+         !((0x39 + (~x+1)) & neg_sig) ;
 }
 /* 
  * conditional - same as x ? y : z 
@@ -209,7 +226,11 @@ int isAsciiDigit(int x) {
  *   Rating: 3
  */
 int conditional(int x, int y, int z) {
-  return 2;
+  // x == 0 --> ~0
+  // x != 0 --> 0
+  x = !!x + (~1+1);
+  // x ? y : z
+  return (~x & y) | (x & z);
 }
 /* 
  * isLessOrEqual - if x <= y  then return 1, else return 0 
@@ -219,7 +240,9 @@ int conditional(int x, int y, int z) {
  *   Rating: 3
  */
 int isLessOrEqual(int x, int y) {
-  return 2;
+  // if y - x >= 0 return 1 
+  int neg_sig = 1 << 31;
+  return !((y + (~x+1)) & neg_sig);
 }
 //4
 /* 
@@ -231,7 +254,12 @@ int isLessOrEqual(int x, int y) {
  *   Rating: 4 
  */
 int logicalNeg(int x) {
-  return 2;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  return ~x & 0x1;
 }
 /* howManyBits - return the minimum number of bits required to represent x in
  *             two's complement
