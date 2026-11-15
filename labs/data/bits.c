@@ -274,7 +274,22 @@ int logicalNeg(int x) {
  *  Rating: 4
  */
 int howManyBits(int x) {
-  return 0;
+  // 对负数按位取反，正数保持不变
+  unsigned u = (x >> 31) ^ x;
+
+  // 二分查找最高位的 1
+  unsigned high_16 = !!(u >> 16) << 4;
+  u >>= high_16;
+  unsigned high_8 = !!(u >> 8) << 3;
+  u >>= high_8;
+  unsigned high_4 = !!(u >> 4) << 2;
+  u >>= high_4;
+  unsigned high_2 = !!(u >> 2) << 1;
+  u >>= high_2;
+  unsigned high_1 = !!(u >> 1) << 0;
+  u >>= high_1;
+  unsigned high_0 = !!(u >> 0);
+  return (high_16 + high_8 + high_4 + high_2 + high_1 + high_0) + 1;
 }
 //float
 /* 
