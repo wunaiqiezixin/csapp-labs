@@ -304,7 +304,27 @@ int howManyBits(int x) {
  *   Rating: 4
  */
 unsigned floatScale2(unsigned uf) {
-  return 2;
+  // V = (-1)^s x M x 2^E
+  unsigned s = uf >> 31;
+  unsigned exp = uf << 1 >> 24;
+  unsigned f = uf << 9 >> 9;
+
+  // 如果 uf 是 NaN、无穷，直接返回
+  if (exp == 255)
+    return uf;
+
+  // 非规格化数：E = -126
+  if (exp == 0) {
+    f <<= 1;
+    exp += f >> 23;
+    f = f << 9 >> 9;
+  } // 规格化数：E = exp - 127
+  else {
+    exp++;
+  }
+  
+  // 拼接
+  return (s << 31) | (exp << 23) | f;
 }
 /* 
  * floatFloat2Int - Return bit-level equivalent of expression (int) f
