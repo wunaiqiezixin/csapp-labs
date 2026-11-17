@@ -339,7 +339,26 @@ unsigned floatScale2(unsigned uf) {
  *   Rating: 4
  */
 int floatFloat2Int(unsigned uf) {
-  return 2;
+  // V = (-1)^s x M x 2^E
+  unsigned s = uf >> 31;
+  unsigned exp = uf << 1 >> 24;
+  unsigned f = uf << 9 >> 9;
+
+  // 如果是 NaN 或 infinity 直接返回 0x80000000u
+  if (exp == 255)
+    return 0x80000000u;
+
+  // 如果 exp < 127，直接返回 0
+  if (exp < 127)
+    return 0;
+
+  // 如果 exp >= 127，即 E >= 0，提取 f 的高 E 位
+  int E = exp - 127;
+  int result = (f >> (23-E)) + 1;
+  // 判断符号位
+  if (s)
+    result = -result;
+  return result;
 }
 /* 
  * floatPower2 - Return bit-level equivalent of the expression 2.0^x
