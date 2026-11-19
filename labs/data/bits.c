@@ -374,5 +374,11 @@ int floatFloat2Int(unsigned uf) {
  *   Rating: 4
  */
 unsigned floatPower2(int x) {
-    return 2;
+  // 非规格化数: V = 0.f × 2^{-126} = f × 2^{-149}
+  if (x < -149)
+    return 0;
+  // 规格化数：V = 1.f × 2^{exp-127} = 1.0 × 2^{exp-127}
+  if (x >= 128)
+    return 0x7f800000u;
+  return (x + 127) << 23;
 }
