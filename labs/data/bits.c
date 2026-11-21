@@ -343,21 +343,27 @@ int floatFloat2Int(unsigned uf) {
   unsigned s = uf >> 31;
   unsigned exp = uf << 1 >> 24;
   unsigned f = uf << 9 >> 9;
+  int E = exp - 127;
 
-  // 如果是 NaN 或 infinity 直接返回 0x80000000u
-  if (exp == 255)
+  // int 的范围 [ -2^{31}, 2^{31} - 1 ]
+  // V = (-1)^s × 1.f × 2^E
+  if (exp >= 158)
     return 0x80000000u;
 
   // 如果 exp < 127，直接返回 0
   if (exp < 127)
     return 0;
 
-  // 如果 exp >= 127，即 E >= 0，提取 f 的高 E 位
-  int E = exp - 127;
-  int result = (f >> (23-E)) + 1;
-  // 判断符号位
-  if (s)
-    result = -result;
+
+  // 如果 0 <= E < 31
+  // V = (-1)^s × (2^E + 0.f × 2^E)
+  int result;
+  if (exp >= 150) {
+    result = (1u << E) + (f << (1u << (E - 23)));
+  } else {
+    result = (1u << E) + (f >> (23 - E));
+  }
+  if (s) result = -result;
   return result;
 }
 /* 
